@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -248,6 +249,8 @@ public class MainActivity extends AppCompatActivity {
                 if (!keep)
                     break;
             }
+        }else{
+            Toast.makeText(getApplicationContext(),"Arduino Not Detected",Toast.LENGTH_SHORT).show();
         }
 
 
