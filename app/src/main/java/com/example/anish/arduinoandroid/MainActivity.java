@@ -10,12 +10,16 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,7 +30,7 @@ import java.util.Map;
 import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
 
     private static final String TAG = "MainActivity";
     public final String ACTION_USB_PERMISSION = "com.hariharan.arduinousb.USB_PERMISSION";
@@ -34,11 +38,13 @@ public class MainActivity extends AppCompatActivity {
     Button upButton , downButon , leftButton , rightButton;
     ImageButton addButton , removeButton;
     TextView textView;
+    Switch autoScrollSwitch;
     EditText editText;
     UsbManager usbManager;
     UsbDevice device;
     UsbSerialDevice serialPort;
     UsbDeviceConnection connection;
+    boolean autoSwitch = false;
 
     UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
         @Override
@@ -73,7 +79,11 @@ public class MainActivity extends AppCompatActivity {
                             serialPort.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
                             serialPort.read(mCallback);
                             tvAppend(textView,"Serial Connection Opened!\n");
-
+                            if(autoSwitch) {
+                                textView.setGravity(Gravity.BOTTOM);
+                            }else{
+                                textView.setGravity(Gravity.NO_GRAVITY);
+                            }
                         } else {
                             Log.d("SERIAL", "PORT NOT OPEN");
                         }
@@ -99,9 +109,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main_new);
         usbManager = (UsbManager) getSystemService(USB_SERVICE);
         startButton = findViewById(R.id.startbt);
-//        sendButton = findViewById(R.id.buttonSend);
         stopButton = findViewById(R.id.stopbt);
-        editText = findViewById(R.id.editText);
         textView = findViewById(R.id.textView);
 
         addButton = findViewById(R.id.add_button);
@@ -118,6 +126,12 @@ public class MainActivity extends AppCompatActivity {
         downButon = findViewById(R.id.downButton);
         leftButton = findViewById(R.id.leftButton);
         rightButton = findViewById(R.id.rightButton);
+
+        autoScrollSwitch = findViewById(R.id.autoSwitch);
+        textView.setMovementMethod(new ScrollingMovementMethod());
+        if (autoScrollSwitch != null) {
+            autoScrollSwitch.setOnCheckedChangeListener(this);
+        }
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -260,14 +274,12 @@ public class MainActivity extends AppCompatActivity {
         String string = editText.getText().toString();
         serialPort.write(string.getBytes());
         tvAppend(textView, "\nData Sent : " + string + "\n");
-
     }
 
     public void onClickStop(View view) {
         setUiEnabled(false);
         serialPort.close();
         tvAppend(textView,"\nSerial Connection Closed! \n");
-
     }
 
     public void onClickClear(View view) {
@@ -284,7 +296,16 @@ public class MainActivity extends AppCompatActivity {
                 ftv.append(ftext);
             }
         });
+        if(autoSwitch) {
+            textView.setGravity(Gravity.BOTTOM);
+        }else{
+            textView.setGravity(Gravity.NO_GRAVITY);
+        }
     }
 
 
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        autoSwitch = isChecked;
+    }
 }
